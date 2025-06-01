@@ -1,0 +1,149 @@
+<%- include('../partials/header', { pageTitle: pageTitle }) %>
+
+<div class="profile-page-container">
+    <div class="profile-header">
+        <div class="profile-image-wrapper">
+            <img src="<%= profileUser.profileImageUrl %>" alt="<%= profileUser.username %>'s Profile Picture" class="profile-pic-large">
+        </div>
+        <div class="profile-info">
+            <h1><%= profileUser.username %></h1>
+            <p class="profile-email">
+                <%# Email is now passed as profileUser.email only if it should be displayed (controlled by route) %>
+                <% if (profileUser.email) { %> 
+                    Email: <%= profileUser.email %>
+                <% } %>
+            </p>
+            <% if (profileUser.bio) { %>
+                <p class="profile-bio"><strong>Bio:</strong> <%- profileUser.bio.replace(/\n/g, '<br>') %></p>
+            <% } else { %>
+                <p class="profile-bio"><em>No bio yet.</em></p>
+            <% } %>
+            <p class="profile-member-since">Bergabung sejak: <%= new Date(profileUser.createdAt).toLocaleDateString() %></p>
+
+            <div class="profile-stats">
+                <a href="/users/<%= profileUser._id %>/followers" class="profile-stat-link">
+                    <strong><%= profileUser.followers ? profileUser.followers.length : 0 %></strong> Pengikut
+                </a>
+                <span style="margin: 0 10px;">&bull;</span>
+                <a href="/users/<%= profileUser._id %>/following" class="profile-stat-link">
+                    <strong><%= profileUser.following ? profileUser.following.length : 0 %></strong> Diikuti
+                </a>
+            </div>
+
+            <div class="profile-actions" style="margin-top: 15px;">
+                <% if (currentUser) { %>
+                    <% if (currentUser._id.equals(profileUser._id)) { %>
+                        <a href="/profile/edit" class="btn btn-secondary">Ubah Profil</a>
+                    <% } else { %>
+                        <%# locals.isFollowing is passed from the /users/:userId route %>
+                        <% const isCurrentlyFollowing = locals.isFollowing; %>
+                        <% if (isCurrentlyFollowing) { %>
+                            <form action="/users/<%= profileUser._id %>/unfollow?_method=POST" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-danger">Berhenti Ikuti</button>
+                            </form>
+                        <% } else { %>
+                            <form action="/users/<%= profileUser._id %>/follow?_method=POST" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-primary">Ikuti</button>
+                            </form>
+                        <% } %>
+                    <% } %>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="profile-content-tabs">
+        <button class="tab-link active" onclick="openProfileTab(event, 'ReviewedBooks')">Buku yang Diulas (<%= reviews.length %>)</button>
+        <button class="tab-link" onclick="openProfileTab(event, 'UserPosts')">Postingan <%= profileUser.username %> (<%= userPosts.length %>)</button>
+    </div>
+
+    <div id="ReviewedBooks" class="profile-tab-content" style="display:block;">
+        <% if (reviews && reviews.length > 0) { %>
+            <div class="book-list-container profile-review-list"> 
+                <% reviews.forEach(review => { %>
+                    <% if (review.book) { %> 
+                        <div class="book-card">
+                            <a href="/books/<%= review.book._id %>">
+                                <div class="book-card-image-wrapper">
+                                    <img src="<%= review.book.coverImage %>" alt="<%= review.book.title %> Cover" class="book-card-image">
+                                </div>
+                                <div class="book-card-content">
+                                    <div>
+                                        <h3><%= review.book.title %></h3>
+                                        <div class="review-rating" style="margin-top: 5px; margin-bottom: 8px;">
+                                            <span class="star-rating">
+                                                <% for(let i = 1; i <= 5; i++) { %>
+                                                    <span class="star"><%= i <= review.rating ? '★' : '☆' %></span>
+                                                <% } %>
+                                            </span>
+                                            (<%= review.rating %>/5)
+                                        </div>
+                                        <p class="user-review-text">"<%- (review.text || '').substring(0, 100) %><% if ((review.text || '').length > 100) { %>...<% } %>"</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    <% } %>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <p><%= profileUser.username %> belum mengulas buku.</p>
+        <% } %>
+    </div>
+
+    <div id="UserPosts" class="profile-tab-content" style="display:none;">
+        <% if (userPosts && userPosts.length > 0) { %>
+            <div class="posts-list-section profile-posts-list">
+                <% userPosts.forEach(post => { %>
+                    <%- include('../partials/postCard', { 
+                            post: post, 
+                            currentUser: currentUser,
+                            originalUrl: currentRequestUrl  // <-- USE THE EXPLICITLY PASSED VARIABLE
+                          }) 
+                    %>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <p><%= profileUser.username %> belum membuat post.</p>
+        <% } %>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
+
+<script>
+function openProfileTab(evt, tabName) {
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("profile-tab-content");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tab-link");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  var targetTab = document.getElementById(tabName);
+  if (targetTab) {
+    targetTab.style.display = "block";
+  }
+  if (evt && evt.currentTarget) {
+    evt.currentTarget.className += " active";
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const firstTabButton = document.querySelector('.tab-link[onclick*="ReviewedBooks"]');
+    const userPostsTabButton = document.querySelector('.tab-link[onclick*="UserPosts"]');
+
+    if (window.location.hash === '#UserPosts' && userPostsTabButton && document.getElementById('UserPosts')) {
+        openProfileTab({currentTarget: userPostsTabButton}, 'UserPosts');
+    } else if (firstTabButton && document.getElementById('ReviewedBooks')) { 
+        openProfileTab({currentTarget: firstTabButton}, 'ReviewedBooks');
+    } else if (userPostsTabButton && document.getElementById('UserPosts') && !document.getElementById('ReviewedBooks')) {
+        // If only user posts tab exists and no reviewed books tab
+        openProfileTab({currentTarget: userPostsTabButton}, 'UserPosts');
+    }
+});
+</script>

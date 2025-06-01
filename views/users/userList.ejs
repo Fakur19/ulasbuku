@@ -1,0 +1,44 @@
+<%- include('../partials/header', { pageTitle: pageTitle }) %>
+
+<div class="user-list-page container">
+    <h1><%= listTitle %></h1>
+    <p><a href="/users/<%= profileUser._id %>" class="btn btn-sm btn-outline-secondary">&laquo; Back to <%= profileUser.username %>'s Profile</a></p>
+
+    <% if (usersToList && usersToList.length > 0) { %>
+        <div class="user-list-items">
+            <% usersToList.forEach(listedUser => { %>
+                <div class="user-list-item card-style">
+                    <a href="/users/<%= listedUser._id %>" class="user-list-item-link">
+                        <img src="<%= listedUser.profileImageUrl %>" alt="<%= listedUser.username %>" class="user-list-avatar">
+                        <span class="user-list-username"><%= listedUser.username %></span>
+                    </a>
+                    <%# You can add a follow/unfollow button here too if currentUser is viewing this list %>
+                    <% if (currentUser && !currentUser._id.equals(listedUser._id)) { %>
+                        <% const isFollowingListedUser = currentUser.following.some(followedUser => followedUser.equals(listedUser._id)); %>
+                        <div class="user-list-item-action">
+                            <% if (isFollowingListedUser) { %>
+                                <form action="/users/<%= listedUser._id %>/unfollow?_method=POST" method="POST">
+                                    <button type="submit" class="btn btn-sm btn-danger">Unfollow</button>
+                                </form>
+                            <% } else { %>
+                                <form action="/users/<%= listedUser._id %>/follow?_method=POST" method="POST">
+                                    <button type="submit" class="btn btn-sm btn-primary">Follow</button>
+                                </form>
+                            <% } %>
+                        </div>
+                    <% } %>
+                </div>
+            <% }); %>
+        </div>
+    <% } else { %>
+        <p class="empty-list-message">
+            <% if (listTitle.toLowerCase().includes("following")) { %>
+                <%= profileUser.username %> is not following anyone yet.
+            <% } else { %>
+                <%= profileUser.username %> has no followers yet.
+            <% } %>
+        </p>
+    <% } %>
+</div>
+
+<%- include('../partials/footer') %>

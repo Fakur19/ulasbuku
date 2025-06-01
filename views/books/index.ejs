@@ -1,0 +1,98 @@
+<%- include('../partials/header') %>
+
+<h1>Buku-Buku</h1>
+
+<form method="GET" action="/books" class="filter-search-form">
+    <div style="flex-grow: 1; min-width: 200px;">
+        <label for="search">Cari Buku/Penulis:</label>
+        <input type="text" name="search" id="search" value="<%= locals.searchTerm || '' %>" placeholder="e.g., Gatsby, Tolkien">
+    </div>
+    <div style="flex-grow: 1; min-width: 150px;">
+        <label for="genre">Saring Berdasarkan Genre:</label>
+        <select name="genre" id="genre">
+            <option value="All" <%= (!locals.selectedGenre || locals.selectedGenre === 'All') ? 'selected' : '' %>>Semua Genre</option>
+            <% if (locals.genres && genres.length > 0) { %>
+                <% genres.forEach(genre => { %>
+                    <option value="<%= genre %>" <%= (locals.selectedGenre === genre) ? 'selected' : '' %>>
+                        <%= genre %>
+                    </option>
+                <% }); %>
+            <% } %>
+        </select>
+    </div>
+
+    <%# --- NEW: Sort Dropdown --- %>
+    <div style="flex-grow: 1; min-width: 150px;">
+        <label for="sort">Urut Berdasarkan:</label>
+        <select name="sort" id="sort">
+            <option value="newest" <%= (locals.currentSort === 'newest' || !locals.currentSort) ? 'selected' : '' %>>Terbaru</option>
+            <option value="rating_desc" <%= locals.currentSort === 'rating_desc' ? 'selected' : '' %>>Rating Tertinggi</option>
+            <option value="reviews_desc" <%= locals.currentSort === 'reviews_desc' ? 'selected' : '' %>>Ulasan Terbanyak</option>
+            <%# You could add a "Popularity Score" option later if you implement that metric %>
+        </select>
+    </div>
+    <%# --- END: Sort Dropdown --- %>
+
+    <div style="align-self: flex-end;"> <%# This div wraps the buttons %>
+        <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">Terapkan</button>
+        <% if (locals.searchTerm || (locals.selectedGenre && locals.selectedGenre !== 'All') || (locals.currentSort && locals.currentSort !== 'newest') ) { %>
+            <a href="/books" class="btn btn-secondary" style="padding: 10px 15px; margin-left: 5px;">Bersihkan</a>
+        <% } %>
+    </div>
+</form>
+
+<%# ... rest of your books list display (book-list-container) ... %>
+<% if (books.length > 0) { %>
+    <div class="book-list-container">
+        <% books.forEach(book => { %>
+            <div class="book-card">
+                <a href="/books/<%= book._id %>">
+                    <div class="book-card-image-wrapper">
+                        <img src="<%= book.coverImage %>" alt="<%= book.title %> Cover" class="book-card-image">
+                    </div>
+                    <div class="book-card-content">
+                        <div>
+                            <h3><%= book.title %></h3>
+                            <p class="book-author">oleh <%= book.author %></p>
+                            <% if (book.genre) { %>
+                                <p class="book-genre" style="font-size: 0.85em; color: var(--text-color-muted);">Genre: <%= book.genre %></p>
+                            <% } %>
+                            <div class="book-card-stats" style="margin-top: 8px; font-size: 0.9em;">
+                                <% if (book.reviewCount > 0) { %>
+                                    <span class="star-rating">
+                                        <% const fullStars = Math.round(book.averageRating); %>
+                                        <% const emptyStars = 5 - fullStars; %>
+                                        <% for(let i = 0; i < fullStars; i++) { %><span class="star" style="color: var(--star-color);">★</span><% } %>
+                                        <% for(let i = 0; i < emptyStars; i++) { %><span class="star" style="color: var(--star-color); opacity: 0.5;">☆</span><% } %>
+                                    </span>
+                                    <span style="margin-left: 5px; color: var(--text-color-muted);">
+                                        <%= book.averageRating.toFixed(1) %> (<%= book.reviewCount %> <%= book.reviewCount === 1 ? 'review' : 'reviews' %>)
+                                    </span>
+                                <% } else { %>
+                                    <span style="color: var(--text-color-muted);">Belum ada ulasan</span>
+                                <% } %>
+                            </div>
+                        </div>
+                        <% if (book.addedBy && book.addedBy.username) { %>
+                             <p class="added-by">Added by: <a href="/users/<%= book.addedBy._id %>"><%= book.addedBy.username %></a></p>
+                        <% } %>
+                    </div>
+                </a>
+            </div>
+        <% }); %>
+    </div>
+<% } else { %>
+    <p class="no-books-message">
+        Buku/Penulis Tidak Ditemukan.
+        <% if (!locals.searchTerm && (!locals.selectedGenre || locals.selectedGenre === 'All') && (!locals.currentSort || locals.currentSort === 'newest')) { %>
+            <% if (currentUser && currentUser.role === 'admin') { %>
+                <a href="/books/new">Be the first to add one!</a>
+            <% } else { %>
+                Check back later for new additions!
+            <% } %>
+        <% } else { %>
+             Pastikan Kata Kunci Sesuai. <a href="/books">Bersihkan</a>.
+        <% } %>
+    </p>
+<% } %>
+<%- include('../partials/footer') %>

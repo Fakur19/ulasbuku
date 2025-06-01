@@ -1,0 +1,13 @@
+<%- include('partials/header') %>
+
+<h1>Selamat Datang di Ulasbuku!</h1>
+<p>Kami percaya setiap buku punya ceritanya sendiri, dan setiap pembaca punya petualangannya. Mari temukan buku yang akan mengubah pandangan Anda, atau sekadar membuat hari Anda lebih berwarna. Selamat menjelajah! </p>
+
+<% if (!currentUser) { %>
+    <p><a href="/auth/signup">Daftar</a> untuk mulai mengulas atau <a href="/auth/login">Masuk</a> jika Anda sudah memiliki Akun.</p>
+<% } %>
+
+<p><a href="/books">Jelajahi Semua Buku</a></p>
+
+
+<%- include('partials/footer') %>

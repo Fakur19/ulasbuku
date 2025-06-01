@@ -1,0 +1,44 @@
+<%- include('../partials/header', { pageTitle: 'Edit Your Profile' }) %>
+
+<div class="auth-page-wrapper"> <%# Re-use auth page styling for consistency %>
+    <div class="auth-card">
+        <h2>Edit Profile</h2>
+
+        <% if (locals.error) { %>
+            <p class="message error-message"><%= error %></p>
+        <% } %>
+        <% if (locals.success) { %> <%# For future success messages via flash %>
+            <p class="message success-message"><%= success %></p>
+        <% } %>
+
+        <form action="/profile/edit" method="POST" class="auth-form">
+            <div class="form-group">
+                <label for="username-display">Username</label>
+                <input type="text" id="username-display" value="<%= user.username %>" disabled readonly style="background-color: #eee;">
+                <small>Username cannot be changed here.</small>
+            </div>
+            <div class="form-group">
+                <label for="email-display">Email</label>
+                <input type="email" id="email-display" value="<%= user.email %>" disabled readonly style="background-color: #eee;">
+                <small>Email cannot be changed here.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="bio">Bio (max 500 characters)</label>
+                <textarea id="bio" name="bio" rows="4" maxlength="500"><%= locals.formData && typeof formData.bio !== 'undefined' ? formData.bio : user.bio %></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="profileImageUrl">Profile Image URL</label>
+                <input type="url" id="profileImageUrl" name="profileImageUrl" value="<%= locals.formData && typeof formData.profileImageUrl !== 'undefined' ? formData.profileImageUrl : user.profileImageUrl %>">
+            </div>
+
+            <button type="submit" class="btn btn-primary auth-submit-btn">Save Changes</button>
+        </form>
+        <div class="auth-switch-link" style="margin-top:15px;">
+            <p><a href="/profile">&laquo; Back to My Profile</a></p>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

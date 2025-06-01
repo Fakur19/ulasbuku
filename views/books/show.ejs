@@ -1,0 +1,112 @@
+<%- include('../partials/header') %>
+
+<div class="book-detail-grid">
+    <div class="book-cover-large-wrapper">
+        <img src="<%= book.coverImage %>" alt="<%= book.title %> Cover" class="book-cover-large">
+    </div>
+    <div class="book-meta">
+        <h1><%= book.title %></h1>
+        <h2>oleh <%= book.author %></h2>
+
+        <% if (book.genre) { %> <%# NEW SECTION %>
+            <p><strong>Genre:</strong> <%= book.genre %></p>
+        <% } %>
+        <% if (book.isbn) { %>
+            <p><strong>ISBN:</strong> <%= book.isbn %></p>
+        <% } %>
+
+        <% if (book.description && typeof book.description === 'string' && book.description.trim() !== '') { %>
+            <p><strong>Deskripsi:</strong> <%- book.description.replace(/\n/g, '<br>') %></p>
+        <% } else if (book.description) { %>
+            <p><strong>Deskripsi:</strong> <%- book.description %></p>
+        <% } %>
+
+        <div class="actions">
+            <% if (currentUser && book.addedBy && currentUser._id.equals(book.addedBy._id)) { %>
+                <a href="/books/<%= book._id %>/edit" class="btn btn-edit">Edit Book Details</a>
+                <% } %>
+        </div>
+
+        <% if (book.addedBy) { %>
+            <p class="added-by-detail">
+                <em>Ditambahkan oleh: <a href="/users/<%= book.addedBy._id %>"><%= book.addedBy.username %></a> on <%= new Date(book.createdAt).toLocaleDateString() %></em>
+            </p>
+        <% } %>
+    </div>
+</div>
+
+<hr>
+
+<div class="reviews-section">
+    <h3>Ulasan (<%= book.reviews.length %>)</h3>
+
+    <% if (currentUser) { %>
+        <h4>Tinggalkan Ulasan:</h4>
+        <% if (locals.error) { %> 
+             <p class="message error-message"><%= error %></p>
+        <% } %>
+        <form action="/books/<%= book._id %>/reviews" method="POST" class="review-form">
+            <div class="form-group star-rating-container">
+                <label for="rating-stars">Rating:<span class="required-asterisk">*</span></label>
+                <div class="star-rating-input" id="rating-stars">
+                    <%# Loop backwards from 5 to 1 for CSS sibling selector trick %>
+                    <% for(let i = 5; i >= 1; i--) { %>
+                        <input type="radio" 
+                               id="star<%= i %>-<%= book._id %>" 
+                               name="rating" 
+                               value="<%= i %>" 
+                               <% if (i === 1) { %>required<% } %> <%# Make one of them required for HTML5 validation %>
+                               <%# Pre-select if there was an error and rating was already chosen %>
+                               <% if (locals.newReview && String(newReview.rating) === String(i)) { %>checked<% } %> >
+                        <label for="star<%= i %>-<%= book._id %>" title="<%= i %> star<%= i > 1 ? 's' : '' %>">★</label>
+                    <% } %>
+                </div>
+            </div>
+            <div>
+                <label for="text">Ulasan Anda:<span class="required-asterisk">*</span></label>
+                <textarea name="text" id="text" rows="4" required><%= locals.newReview && newReview.text ? newReview.text : '' %></textarea>
+            </div>
+            <button type="submit" class="btn btn-secondary">Kirim Ulasan</button>
+        </form>
+        <hr style="margin-top: 30px; margin-bottom: 30px;">
+    <% } else { %>
+        <p>Mohon untuk <a href="/auth/login?redirect=/books/<%= book._id %>">masuk</a> untuk meninggalkan ulasan.</p>
+    <% } %>
+
+
+    <% if (book.reviews && book.reviews.length > 0) { %>
+        <ul class="review-list">
+            <% book.reviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(review => { %>
+                <li class="review-item">
+                    <div class="review-header">
+                        <span class="review-user">
+                            <% if (review.user) { %>
+                                <a href="/users/<%= review.user._id %>"><%= review.user.username %></a>
+                            <% } else { %>
+                                Anonymous
+                            <% } %>
+                        </span>
+                        <span class="review-date"><%= new Date(review.createdAt).toLocaleDateString() %></span>
+                    </div>
+                    <div class="review-rating">
+                        <span class="star-rating">
+                            <% for(let i = 1; i <= 5; i++) { %>
+                                <span class="star"><%= i <= review.rating ? '★' : '☆' %></span>
+                            <% } %>
+                        </span>
+                        (<%= review.rating %>/5)
+                    </div>
+                    <p class="review-text"><%- (review.text || '').replace(/\n/g, '<br>') %></p>
+                </li>
+            <% }); %>
+        </ul>
+    <% } else { %>
+        <p>Belum ada ulasan untuk buku ini.
+        <% if (currentUser) { %> Jadilah yang pertama memberikan ulasan! <% } %>
+        </p>
+    <% } %>
+</div>
+
+<p style="margin-top: 30px;"><a href="/books" class="btn btn-primary">&laquo; Kembali ke Semua Buku</a></p>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,37 @@
+ejs <%- include('../partials/header') %>
+
+<h2>Add a New Book</h2>
+
+<% if (locals.error) { %>
+    <p class="message error-message"><%= error %></p>
+<% } %>
+
+<form action="/books" method="POST">
+    <div>
+        <label for="title">Title:<span class="required-asterisk">*</span></label>
+        <input type="text" id="title" name="title" value="<%= book.title || '' %>" required>
+    </div>
+    <div>
+        <label for="author">Author:<span class="required-asterisk">*</span></label>
+        <input type="text" id="author" name="author" value="<%= book.author || '' %>" required>
+    </div>
+    <div>
+        <label for="genre">Genre:</label> <%# NEW FIELD %>
+        <input type="text" id="genre" name="genre" value="<%= book.genre || '' %>" placeholder="e.g., Fiction, Science, History">
+    </div>
+    <div>
+        <label for="isbn">ISBN (Optional):</label>
+        <input type="text" id="isbn" name="isbn" value="<%= book.isbn || '' %>">
+    </div>
+    <div>
+        <label for="description">Description (Optional):</label>
+        <textarea id="description" name="description"><%= book.description || '' %></textarea>
+    </div>
+    <div>
+        <label for="coverImage">Cover Image URL (Optional):</label>
+        <input type="url" id="coverImage" name="coverImage" value="<%= book.coverImage || '' %>" placeholder="http://example.com/image.jpg">
+    </div>
+    <button type="submit" class="btn btn-secondary">Add Book</button>
+</form>
+
+<%- include('../partials/footer') %>

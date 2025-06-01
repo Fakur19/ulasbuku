@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof pageTitle !== 'undefined' ? pageTitle + ' | ' : '' %>Ulasbuku</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+        // IIFE to apply theme ASAP
+        (function() {
+            let theme = localStorage.getItem('theme');
+            if (!theme) {
+                theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="/">Ulasbuku</a>
+            </div>
+
+            <%# Hamburger Menu Button - Shown on mobile %>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+                <span class="hamburger-icon"></span>
+                <span class="hamburger-icon"></span>
+                <span class="hamburger-icon"></span>
+            </button>
+
+            <%# Navigation Links and User Actions - Collapsible on mobile %>
+            <div class="nav-menu" id="navMenu">
+                <div class="nav-links">
+                    <a href="/books">Buku</a>
+                    <a href="/feed">Beranda</a>
+                    <% if (currentUser) { %>
+                        <a href="/users/search">Cari Teman</a>
+                    <% } %>
+                    <% if (currentUser && currentUser.role === 'admin') { %>
+                        <a href="/books/new">Tambah Buku</a>
+                    <% } %>
+                </div>
+                <div class="nav-user-actions">
+                    <% if (currentUser) { %>
+                        <span class="nav-user-welcome">Welcome, <%= currentUser.username %>!</span>
+                        <a href="/profile" class="btn btn-sm btn-outline-light">Profil</a>
+                        <a href="/auth/logout" class="btn btn-sm btn-primary">Keluar</a>
+                    <% } else { %>
+                        <a href="/auth/login" class="btn btn-sm btn-secondary">Masuk</a>
+                        <a href="/auth/signup" class="btn btn-sm btn-primary">Daftar</a>
+                    <% } %>
+                    <button id="theme-toggler" title="Toggle theme">
+                        <span class="theme-icon theme-icon-sun">☀️</span>
+                        <span class="theme-icon theme-icon-moon" style="display:none;">🌙</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <%# Your existing message handling if any %>

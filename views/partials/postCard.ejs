@@ -1,0 +1,74 @@
+<article class="post-card card-style" id="post-<%= post._id %>">
+    <div class="post-header">
+        <% if (post.author) { %>
+        <a href="/users/<%= post.author._id %>" class="post-author-link">
+            <img src="<%= post.author.profileImageUrl %>" alt="<%= post.author.username %>" class="post-author-avatar">
+            <span class="post-author-username"><%= post.author.username %></span>
+        </a>
+        <% } else { %>
+            <span class="post-author-username">Unknown Author</span>
+        <% } %>
+        <span class="post-timestamp"><%= new Date(post.createdAt).toLocaleString() %></span>
+    </div>
+
+    <% if (post.imageUrl) { %>
+        <div class="post-image-container">
+            <img src="<%= post.imageUrl %>" alt="Post image by <%= post.author ? post.author.username : 'Unknown' %>" class="post-image">
+        </div>
+    <% } %>
+
+    <div class="post-content">
+        <p><%- post.content.replace(/\n/g, '<br>') %></p>
+    </div>
+
+    <div class="post-actions">
+        <button class="btn btn-sm btn-outline-secondary comment-toggle-btn" data-post-id="<%= post._id %>" data-comment-count="<%= post.comments ? post.comments.length : 0 %>">
+            💬 Comments (<%= post.comments ? post.comments.length : 0 %>)
+        </button>
+        <% if (currentUser && post.author && post.author._id && currentUser._id.equals(post.author._id)) { %>
+            <% } %>
+    </div>
+
+    <div class="comments-wrapper" id="comments-wrapper-<%= post._id %>" style="display: none;">
+        <div class="comments-section">
+            <% if (currentUser) { %>
+            <form action="/posts/<%= post._id %>/comments" method="POST" class="comment-form">
+                <div class="form-group">
+                    <textarea name="text" rows="2" placeholder="Write a comment..." required maxlength="1000" aria-label="Comment on post <%= post._id %>"></textarea>
+                </div>
+                <button type="submit" class="btn btn-sm btn-outline-secondary">Post Comment</button>
+            </form>
+            <% } else { %>
+                <%# Use the passed 'originalUrl' local variable (which was named currentRequestUrl in parent views) %>
+                <p class="comment-login-prompt"><a href="/auth/login?redirect=<%= encodeURIComponent(originalUrl || '/feed') %>#post-<%= post._id %>">Log in</a> to comment.</p>
+            <% } %>
+
+            <div class="comments-list">
+                <% if (post.comments && post.comments.length > 0) { %>
+                    <% post.comments.forEach(comment => { %>
+                        <% if (comment.author) { %>
+                        <div class="comment-item">
+                            <img src="<%= comment.author.profileImageUrl %>" alt="<%= comment.author.username %>" class="comment-author-avatar">
+                            <div class="comment-content-body">
+                                <div class="comment-author">
+                                    <a href="/users/<%= comment.author._id %>" class="comment-author-link">
+                                        <span class="comment-author-info">
+                                            <strong><%= comment.author.username %></strong>
+                                        </span>
+                                    </a>
+                                    <span class="comment-timestamp-inline"><%= new Date(comment.createdAt).toLocaleDateString() %></span>
+                                </div>
+                                <p class="comment-text"><%- comment.text.replace(/\n/g, '<br>') %></p>
+                            </div>
+                        </div>
+                        <% } else { %>
+                            <div class="comment-item">Anonymous comment: <%- comment.text.replace(/\n/g, '<br>') %></div>
+                        <% } %>
+                    <% }); %>
+                <% } else if (currentUser) { %>
+                    <p class="no-comments-yet"><em>No comments yet. Be the first!</em></p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</article>

@@ -1,0 +1,50 @@
+<%- include('../partials/header', { pageTitle: pageTitle }) %>
+
+<div class="user-search-page container">
+    <h1>Cari Pengguna</h1>
+
+    <form action="/users/search" method="GET" class="user-search-form card-style">
+        <div class="form-group">
+            <label for="userSearchQuery">Cari dengan username:</label>
+            <input type="text" id="userSearchQuery" name="query" value="<%= searchQuery %>" placeholder="Masukan username..." class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">Cari</button>
+    </form>
+
+    <% if (searchPerformed) { %>
+        <div class="search-results" style="margin-top: 30px;">
+            <h2>Search Results for "<%= searchQuery %>"</h2>
+            <% if (usersFound && usersFound.length > 0) { %>
+                <div class="user-list-items">
+                    <% usersFound.forEach(foundUser => { %>
+                        <div class="user-list-item card-style">
+                            <a href="/users/<%= foundUser._id %>" class="user-list-item-link">
+                                <img src="<%= foundUser.profileImageUrl %>" alt="<%= foundUser.username %>" class="user-list-avatar">
+                                <span class="user-list-username"><%= foundUser.username %></span>
+                            </a>
+                            <%# Optional: Add follow/unfollow button here too %>
+                            <% if (currentUser && !currentUser._id.equals(foundUser._id)) { %>
+                                <% const isFollowingFoundUser = currentUser.following.some(followedUser => followedUser.equals(foundUser._id)); %>
+                                <div class="user-list-item-action">
+                                    <% if (isFollowingFoundUser) { %>
+                                        <form action="/users/<%= foundUser._id %>/unfollow?_method=POST" method="POST">
+                                            <button type="submit" class="btn btn-sm btn-danger">Berhenti Mengikuti</button>
+                                        </form>
+                                    <% } else { %>
+                                        <form action="/users/<%= foundUser._id %>/follow?_method=POST" method="POST">
+                                            <button type="submit" class="btn btn-sm btn-primary">Ikuti</button>
+                                        </form>
+                                    <% } %>
+                                </div>
+                            <% } %>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <p class="empty-list-message">Pengguna tidak ditemukan.</p>
+            <% } %>
+        </div>
+    <% } %>
+</div>
+
+<%- include('../partials/footer') %>

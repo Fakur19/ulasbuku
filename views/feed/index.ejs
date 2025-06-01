@@ -1,0 +1,70 @@
+<%- include('../partials/header', { pageTitle: pageTitle }) %>
+
+<div class="feed-page-container">
+    <h1><%= pageTitle %></h1>
+
+    <% if (locals.feedTypeMessage) { %>
+        <p class="feed-type-info card-style"><%= feedTypeMessage %></p>
+    <% } %>
+
+    <section class="new-post-form-section card-style">
+        <h3>Buat Postingan Baru</h3>
+        <% if (locals.error) { %><p class="message error-message"><%= error %></p><% } %>
+        <% if (locals.success) { %><p class="message success-message"><%= success %></p><% } %>
+        <form action="/posts" method="POST" class="new-post-form" enctype="multipart/form-data">
+            <div class="form-group">
+                <textarea name="content" rows="3" placeholder="Apa yang Anda pikirkan<% if(currentUser && currentUser.username) { %>, <%= currentUser.username %><% } %>?" maxlength="280" required></textarea>
+                <small class="char-counter">0/280</small>
+            </div>
+            <div class="form-group">
+                <label for="postImage">Unggah Gambar:</label>
+                <input type="file" id="postImage" name="postImage" accept="image/png, image/jpeg, image/gif">
+            </div>
+            <button type="submit" class="btn btn-secondary">Post</button>
+        </form>
+    </section>
+
+    <section class="posts-list-section">
+        <% if (posts && posts.length > 0) { %>
+            <% posts.forEach(post => { %>
+                <%- include('../partials/postCard', { 
+                        post: post, 
+                        currentUser: currentUser,
+                        originalUrl: currentRequestUrl  // <-- USE THE EXPLICITLY PASSED VARIABLE
+                      }) 
+                %>
+            <% }); %>
+        <% } else { %>
+            <% if (feedTypeMessage && feedTypeMessage.includes("users you follow") && (!currentUser.following || currentUser.following.length === 0) ) { %>
+                 <p class="empty-feed-message">Your feed is currently empty. Start by following some users to see their posts here, or explore global posts!</p>
+            <% } else if (feedTypeMessage && feedTypeMessage.includes("users you follow") ) { %>
+                 <p class="empty-feed-message">None of the users you follow have posted anything yet. Check back later or explore global posts!</p>
+            <% } else { %>
+                 <p class="empty-feed-message">No posts to show yet. Why not create the first one or explore users to follow?</p>
+            <% } %>
+        <% } %>
+    </section>
+</div>
+
+<%- include('../partials/footer') %>
+
+<script>
+    // Simple character counter for the textarea
+    document.addEventListener('DOMContentLoaded', () => {
+        const textarea = document.querySelector('.new-post-form textarea[name="content"]');
+        const charCounter = document.querySelector('.new-post-form .char-counter');
+        if (textarea && charCounter) {
+            const updateCounter = () => {
+                const currentLength = textarea.value.length;
+                charCounter.textContent = currentLength + '/280';
+                if (currentLength > 280) {
+                    charCounter.style.color = 'var(--accent-color)';
+                } else {
+                    charCounter.style.color = 'var(--text-color-muted)';
+                }
+            };
+            textarea.addEventListener('input', updateCounter);
+            updateCounter(); // Initialize counter
+        }
+    });
+</script>

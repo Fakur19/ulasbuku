@@ -1,0 +1,13 @@
+<%- include('partials/header', { pageTitle: 'Page Not Found' }) %>
+
+<div class="container text-center" style="padding-top: 50px; padding-bottom: 50px;">
+    <h1 style="font-size: 4em; color: var(--accent-color); margin-bottom: 0.2em;">404</h1>
+    <h2>Oops! Page Not Found.</h2>
+    <p style="font-size: 1.2em; color: var(--text-color-muted); margin-top: 10px; margin-bottom: 30px;">
+        Sorry, the page you are looking for doesn't exist or has been moved.
+    </p>
+    <a href="/" class="btn btn-primary btn-lg">Go to Homepage</a>
+    <a href="javascript:history.back()" class="btn btn-outline-secondary btn-lg" style="margin-left: 10px;">Go Back</a>
+</div>
+
+<%- include('partials/footer') %>
